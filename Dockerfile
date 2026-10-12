@@ -32,6 +32,7 @@ FROM php:8.5-apache AS runtime
 RUN apt-get update && apt-get install -y --no-install-recommends \
     libzip-dev \
     libicu-dev \
+    apt-transport-https \
     && docker-php-ext-install -j"$(nproc)" pdo_mysql intl zip \
     && rm -rf /var/lib/apt/lists/*
 
@@ -55,7 +56,7 @@ COPY --from=builder --chown=www-data:www-data /app /app
 # csrf secret + DB password) and runtime state (var/session.key, sessions
 # DB credentials in cache, log files). Apache runs the workers as
 # www-data, which retains rwx via the group.
-RUN chmod -R 750 /app/var /app/config
+RUN mkdir -p /app/var /app/config && chmod -R 750 /app/var /app/config
 
 # Production image: refuse to leak stack traces by accident. docker-compose
 # overrides this to 'dev' for the local development stack.
